@@ -1,9 +1,10 @@
 {
-    "name": "node-api",
-    "main": "server.js",
-    "dependencies": {
-        "express": "~4.0.0",
-        "mongoose": "~3.6.13",
-        "body-parser": "~1.0.1"
-    }
+  "name": "quickstart",
+  "description": "Appengine node.js quickstart project",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "3.x",
+    "appengine" : "git://github.com/GoogleCloudPlatform/appengine-nodejs.git",
+    "phantom": "~0.6.5"
+  }
 }

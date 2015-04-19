@@ -1,36 +1,53 @@
-// server.js
-
-// BASE SETUP
-// =============================================================================
-
 // call the packages we need
 var express    = require('express');        // call express
-var app        = express();                 // define our app using express
-var bodyParser = require('body-parser');
+var app = express();
 
-// configure app to use bodyParser()
-// this will let us get the data from a POST
+var bodyParser = require('body-parser');
+var sherlock = require('sherlock-inspector');
+var segment = require('sherlock-segment');
+var bunyan = require('bunyan');
+var log = bunyan.createLogger({name: "waldo"});            // define our app using express
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 3000;        // set our port
-
-// ROUTES FOR OUR API
-// =============================================================================
-var router = express.Router();              // get an instance of the express Router
-
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });
+app.get('/v1/test', function(req, res) {
+  res.json(
+    {
+      test: "bonk"
+    }
+  );
 });
 
-// more routes for our API will happen here
+app.get('/v1/what', function(req, res) {
+  var out;
 
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
-app.use('/api', router);
+  log.info("Making request for: " + req.query.u);
+  var t = process.hrtime();
+
+  sherlock()
+    .use(segment)
+    .analyze(req.query.u, function (err, results) {
+      out = results;
+      res.json(
+        {
+          url: req.query.u,
+          data: out
+        }
+      );
+
+      t = process.hrtime(t);
+      log.info(t);
+    });
+});
 
 // START THE SERVER
 // =============================================================================
-app.listen(port);
-console.log('Magic happens on port ' + port);
+var server = app.listen(3030, function () {
+
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log('Waldo listening at http://%s:%s', host, port);
+
+});
