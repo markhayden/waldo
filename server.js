@@ -6,7 +6,22 @@ var bodyParser = require('body-parser');
 var sherlock = require('sherlock-inspector');
 var segment = require('sherlock-segment');
 var bunyan = require('bunyan');
-var log = bunyan.createLogger({name: "waldo"});            // define our app using express
+var bsyslog = require('bunyan-syslog');
+
+var log = bunyan.createLogger({
+  name: 'waldo',
+  streams: [
+    {
+      type: 'raw',
+      stream: bsyslog.createBunyanStream({
+        type: 'sys'
+      })
+    },
+    {
+      stream: process.stdout
+    }
+  ]
+});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
