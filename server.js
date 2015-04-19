@@ -1,56 +1,36 @@
-'use strict';
+// server.js
 
-/*
-var cl = console.log;
-console.log = function(){
-  console.trace();
-  cl.apply(console,arguments);
-};
-*/
+// BASE SETUP
+// =============================================================================
 
-// Requires meanio .
-var mean = require('meanio');
-var cluster = require('cluster');
+// call the packages we need
+var express    = require('express');        // call express
+var app        = express();                 // define our app using express
+var bodyParser = require('body-parser');
 
+// configure app to use bodyParser()
+// this will let us get the data from a POST
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// Code to run if we're in the master process or if we are not in debug mode/ running tests
+var port = process.env.PORT || 8080;        // set our port
 
-if ((cluster.isMaster) &&
-  (process.execArgv.indexOf('--debug') < 0) &&
-  (process.env.NODE_ENV!=='test') && (process.env.NODE_ENV!=='development') &&
-  (process.execArgv.indexOf('--singleProcess')<0)) {
-//if (cluster.isMaster) {
+// ROUTES FOR OUR API
+// =============================================================================
+var router = express.Router();              // get an instance of the express Router
 
-    console.log('for real!');
-    // Count the machine's CPUs
-    var cpuCount = require('os').cpus().length;
+// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
+router.get('/', function(req, res) {
+    res.json({ message: 'hooray! welcome to our api!' });
+});
 
-    // Create a worker for each CPU
-    for (var i = 0; i < cpuCount; i += 1) {
-        console.log ('forking ',i);
-        cluster.fork();
-    }
+// more routes for our API will happen here
 
-    // Listen for dying workers
-    cluster.on('exit', function (worker) {
-        // Replace the dead worker, we're not sentimental
-        console.log('Worker ' + worker.id + ' died :(');
-        cluster.fork();
+// REGISTER OUR ROUTES -------------------------------
+// all of our routes will be prefixed with /api
+app.use('/api', router);
 
-    });
-
-// Code to run if we're in a worker process
-} else {
-
-    var workerId = 0;
-    if (!cluster.isMaster)
-    {
-        workerId = cluster.worker.id;
-    }
-// Creates and serves mean application
-    mean.serve({ workerid: workerId /* more options placeholder*/ }, function (app) {
-      var config = app.config.clean;
-        var port = config.https && config.https.port ? config.https.port : config.http.port;
-        console.log('Mean app started on port ' + port + ' (' + process.env.NODE_ENV + ') cluster.worker.id:', workerId);
-    });
-}
+// START THE SERVER
+// =============================================================================
+app.listen(port);
+console.log('Magic happens on port ' + port);
